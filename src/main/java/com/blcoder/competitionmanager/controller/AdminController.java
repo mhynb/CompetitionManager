@@ -64,7 +64,7 @@ public class AdminController {
     }
 
     @GetMapping("/getTeacher")
-    public R<Page> getTeacehr(int page,int pageSize){
+    public R<Page> getTeacher(int page,int pageSize){
         Page<Teacher> pageInfo = new Page<>(page,pageSize);
         LambdaQueryWrapper<Teacher> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByAsc(Teacher::getNumber);
