@@ -7,9 +7,8 @@ import com.blcoder.competitionmanager.entity.*;
 import com.blcoder.competitionmanager.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -133,5 +132,37 @@ public class AdminController {
         queryWrapper.orderByAsc(FinalResult::getTeamId);
         finalResultService.page(pageInfo,queryWrapper);
         return R.success(pageInfo);
+    }
+
+    @PostMapping("/addTeam")
+    public R<String> addTeam(@RequestBody Team team){
+        Team newTeam = teamService.getById(team.getTeamId());
+        if (newTeam != null){
+            return R.error("团队编号已存在");
+        }
+        teamService.save(team);
+        return R.success("保存成功");
+    }
+
+    @PutMapping("/updateTeam")
+    public R<String> updateTeam(@RequestBody Team team){
+        Team newTeam = teamService.getById(team.getTeamId());
+        if (newTeam != null){
+            return R.error("团队编号已存在");
+        }
+        teamService.updateById(team);
+        return R.success("新增团队成功");
+    }
+
+    @DeleteMapping("/deleteTeam")
+    @Transactional(rollbackFor = Exception.class) // 指定哪些异常会导致事务回滚
+    public R<String> deleteTeam(@PathVariable String teamId) {
+        try {
+            teamService.removeById(teamId);
+            return R.success("团队删除成功");
+        } catch (Exception e) {
+            // 这里可以记录日志或进行其他异常处理
+            return R.error("团队删除失败");
+        }
     }
 }

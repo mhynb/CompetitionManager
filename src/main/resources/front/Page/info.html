@@ -15,16 +15,10 @@
   <div class="mb-3">
     <label for="tableSelect" class="form-label">选择表格：</label>
     <select id="tableSelect" class="form-select">
-      <option value="team">1. team (团队表)</option>
-      <option value="student">2. student (学生表)</option>
-      <option value="teacher">3. teacher (指导教师表)</option>
-      <option value="problem">4. problem (赛题表)</option>
-      <option value="teamProblem">5. teamProblem (团队-赛题表)</option>
-      <option value="expert">6. expert (专家表)</option>
-      <option value="records">7. records (评审记录表)</option>
-      <option value="preliminaryResult">8. preliminaryResult (初赛成绩表)</option>
-      <option value="finalResult">9. finalResult (决赛成绩表)</option>
-      <option value="certificates">10. certificates (证书表)</option>
+      <option value="awardsStatus">1. 获奖状态表</option>
+      <option value="finalScores">2. 最终得分表</option>
+      <option value="teamDetails">3. 团队详情表</option>
+      <option value="certificateInfo">4. 证书信息表</option>
     </select>
   </div>
 
@@ -52,7 +46,7 @@
   // 初始化变量
   let currentPage = 1; // 当前页
   const pageSize = 5; // 每页显示条数
-  const baseUrl = "http://localhost:8080/admin"; // 后端接口基础路径
+  const baseUrl = "http://localhost:8080/normal"; // 后端接口基础路径
   const tableSelect = document.getElementById("tableSelect");
   const tableHead = document.getElementById("tableHead");
   const tableBody = document.getElementById("tableBody");
@@ -62,103 +56,47 @@
 
   // 表格配置，根据选择动态加载表头
   const tableConfigs = {
-    team: {
-      endpoint: "/getTeam",
+    awardsStatus: {
+      endpoint: "/getAwardsStatus",
+      columns: [
+        { key: "teamId", label: "团队编号" },
+        { key: "awardStatus", label: "获奖状态" },
+      ],
+    },
+    finalScores: {
+      endpoint: "/getFinalScores",
       columns: [
         { key: "teamId", label: "团队编号" },
         { key: "teamName", label: "团队名称" },
-        { key: "teamSchool", label: "报名院校" },
+        { key: "problemName", label: "赛题名称" },
+        { key: "finalAverageScore", label: "最终平均得分" },
       ],
     },
-    student: {
-      endpoint: "/getStudent",
+    teamDetails: {
+      endpoint: "/getTeamDetails",
       columns: [
-        { key: "studentId", label: "学号" },
-        { key: "studentName", label: "姓名" },
-        { key: "sex", label: "性别" },
-        { key: "studentTel", label: "电话" },
-        { key: "studentSchool", label: "就读大学" },
-        { key: "roles", label: "团队角色" },
-        { key: "teamId", label: "团队编号" },
-      ],
-    },
-    teacher: {
-      endpoint: "/getTeacher",
-      columns: [
-        { key: "number", label: "指导编号" },
-        { key: "teamId", label: "团队编号" },
-        { key: "teacherName", label: "姓名" },
-        { key: "teacherTel", label: "电话" },
-        { key: "teacherSchool", label: "单位" },
-      ],
-    },
-    problem: {
-      endpoint: "/getProblem",
-      columns: [
-        { key: "problemNumber", label: "赛题编号" },
-        { key: "problemName", label: "赛题名" },
-        { key: "questionCompany", label: "出题企业" },
+        { key: "rank", label: "排名" },
         { key: "trackType", label: "赛道类型" },
-      ],
-    },
-    teamProblem: {
-      endpoint: "/getTeamProblem",
-      columns: [
+        { key: "awardRank", label: "获奖名次" },
         { key: "teamId", label: "团队编号" },
-        { key: "problemNumber", label: "赛题编号" },
-        { key: "trackType", label: "赛道类型" },
-      ],
-    },
-    expert: {
-      endpoint: "/getExpert",
-      columns: [
-        { key: "expertId", label: "专家编号" },
-        { key: "expertName", label: "姓名" },
-        { key: "expertTel", label: "电话" },
-        { key: "expertEmail", label: "电子邮箱" },
-        { key: "workplace", label: "单位" },
-        { key: "jobTitle", label: "职称" },
-        { key: "researchInterest", label: "研究方向" },
-      ],
-    },
-    records: {
-      endpoint: "/getRecords",
-      columns: [
-        { key: "recordsNumber", label: "评审记录编号" },
-        { key: "teamId", label: "团队编号" },
-        { key: "expertId", label: "专家编号" },
-        { key: "stage", label: "评审阶段" },
-        { key: "score", label: "评分" },
-      ],
-    },
-    preliminaryResult: {
-      endpoint: "/getPreliminaryResult",
-      columns: [
-        { key: "teamId", label: "团队编号" },
-        { key: "preliminaryScore", label: "成绩" },
-        { key: "preliminaryRank", label: "名次" },
-      ],
-    },
-    finalResult: {
-      endpoint: "/getFinalResult",
-      columns: [
-        { key: "teamId", label: "团队编号" },
-        { key: "finalScore", label: "成绩" },
-        { key: "finalRank", label: "名次" },
-      ],
-    },
-    certificates: {
-      endpoint: "/getCertificates",
-      columns: [
-        { key: "certificatesId", label: "证书编号" },
-        { key: "trackType", label: "赛道类型" },
-        { key: "finalRank", label: "名次" },
-        { key: "teamSchool", label: "参赛院校" },
-        { key: "studentName", label: "参赛学生姓名" },
-        { key: "studentSchool", label: "参赛学生学校" },
+        { key: "teamName", label: "团队名称" },
+        { key: "problemName", label: "赛题名称" },
+        { key: "school", label: "院校" },
+        { key: "studentName", label: "学生姓名" },
+        { key: "role", label: "角色" },
         { key: "teacherName", label: "指导教师姓名" },
-        { key: "teacherSchool", label: "指导教师单位" },
+        { key: "teacherSchool", label: "指导教师院校" },
+      ],
+    },
+    certificateInfo: {
+      endpoint: "/getCertificateInfo",
+      columns: [
         { key: "teamId", label: "团队编号" },
+        { key: "teamName", label: "团队名称" },
+        { key: "studentName", label: "学生姓名" },
+        { key: "studentSchool", label: "学生院校" },
+        { key: "teacherName", label: "指导教师姓名" },
+        { key: "teacherSchool", label: "指导教师院校" },
       ],
     },
   };
