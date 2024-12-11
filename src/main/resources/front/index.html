@@ -51,11 +51,39 @@
 <body>
 <!-- 从左向右排列且居中的导航栏 -->
 <div class="navbar">
-    <a href="Page/tablePage.html" class="active">首页</a>
-    <a href="Page/dataManager.html">团队管理</a>
-    <a href="Page/info.html">信息查询</a>
-    <a href="#">获奖查询</a>
+    <a href="Page/tablePage.html" id="home" class="active">首页</a>
+    <a href="Page/dataManager.html" id="team">团队管理</a>
+    <a href="Page/info.html" id="info">信息查询</a>
+    <a href="Page/query.html" id="query">获奖查询</a>
 </div>
+
+<script>
+    // 获取所有导航链接
+    const navLinks = document.querySelectorAll('.navbar a');
+
+    // 从 localStorage 获取上一次的 active 按钮 ID
+    const activeId = localStorage.getItem('activeNav') || 'home'; // 默认首页为 active
+    const activeLink = document.getElementById(activeId);
+
+    // 设置 active 状态到上一次点击的按钮
+    if (activeLink) {
+        navLinks.forEach(link => link.classList.remove('active'));
+        activeLink.classList.add('active');
+    }
+
+    // 为每个链接绑定点击事件
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            // 移除所有链接的 active 类
+            navLinks.forEach(nav => nav.classList.remove('active'));
+            // 为当前点击的链接添加 active 类
+            link.classList.add('active');
+
+            // 将当前按钮的 ID 存储到 localStorage
+            localStorage.setItem('activeNav', link.id);
+        });
+    });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

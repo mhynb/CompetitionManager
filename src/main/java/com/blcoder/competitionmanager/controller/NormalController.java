@@ -66,4 +66,23 @@ public class NormalController {
         viewCertificateInfoService.page(pageInfo,queryWrapper);
         return R.success(pageInfo);
     }
+
+    @GetMapping("/isWon")
+    public R<String> isWon(String teamId){
+        LambdaQueryWrapper<ViewTeamAwardStatus> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ViewTeamAwardStatus::getTeamId,teamId);
+        ViewTeamAwardStatus one = viewTeamAwardStatusService.getOne(queryWrapper);
+        if (one == null){
+            return R.error("未查询到相关队伍");
+        }
+        switch (one.getAwardStatus()){
+            case 1:
+                return R.success("恭喜您获得一等奖!");
+            case 2:
+                return R.success("恭喜您获得二等奖!");
+            case 3:
+                return R.success("恭喜您获得三等奖!");
+        }
+        return R.success("很遗憾，您未能获奖");
+    }
 }

@@ -7,5 +7,5 @@ import java.io.Serializable;
 @Data
 public class ViewTeamAwardStatus implements Serializable {
     private String teamId;
-    private String awardStatus;
+    private Integer awardStatus;
 }
