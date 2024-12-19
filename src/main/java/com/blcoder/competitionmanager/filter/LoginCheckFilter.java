@@ -29,6 +29,7 @@ public class LoginCheckFilter implements Filter {
                 "/normal/**",
                 "/user/**",
                 "/front/Page/login.html",
+                "/front/Page/register.html",
                 "/front/images/**"
         };
 

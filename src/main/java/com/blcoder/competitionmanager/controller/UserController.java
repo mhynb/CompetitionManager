@@ -48,4 +48,22 @@ public class UserController {
         request.getSession().setAttribute("user",emp.getId());
         return R.success(emp);
     }
+
+    @PostMapping("/register")
+    public R<String> save(HttpServletRequest request,@RequestBody Users users){
+        log.info("新增用户信息:{}",users.toString());
+        String password = users.getPassword();
+        password = DigestUtils.md5DigestAsHex(password.getBytes());
+        users.setPassword(password);
+        LambdaQueryWrapper<Users> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Users::getUsername,users.getUsername());
+        Users one = usersService.getOne(queryWrapper);
+        if(one != null){
+            return R.error("用户名已存在，请重新输入");
+        }
+        usersService.save(users);
+        one = usersService.getOne(queryWrapper);
+        request.getSession().setAttribute("user",one.getId());
+        return R.success("新增员工成功");
+    }
 }
