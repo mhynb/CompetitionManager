@@ -6,10 +6,10 @@ import java.util.Properties;
 
 public class VaildateCodeUtils {
     // 发件人的邮箱和 SMTP 配置
-    private static final String SMTP_HOST = "smtp.example.com";  // 邮件服务器地址
-    private static final String SMTP_PORT = "587";  // 邮件服务器端口
-    private static final String USERNAME = "your-email@example.com";  // 发件人的邮箱地址
-    private static final String PASSWORD = "your-email-password";  // 发件人的邮箱密码
+    private static final String SMTP_HOST = "smtp.qq.com";  // QQ 邮箱的 SMTP 服务器地址
+    private static final String SMTP_PORT = "587";  // QQ 邮箱的 SMTP 端口
+    private static final String USERNAME = "1692632285@qq.com";  // 发件人的 QQ 邮箱地址
+    private static final String PASSWORD = "nclynjigdivwcchf";  // QQ 邮箱授权码
 
     // 发送邮件的方法
     public static boolean sendVerificationCode(String toEmail, String code) {

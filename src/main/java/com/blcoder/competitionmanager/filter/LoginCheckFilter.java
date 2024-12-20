@@ -28,8 +28,7 @@ public class LoginCheckFilter implements Filter {
                 "/admin/**",
                 "/normal/**",
                 "/user/**",
-                "/front/Page/login.html",
-                "/front/Page/register.html",
+                "/front/page/login/**",
                 "/front/images/**"
         };
 
@@ -52,7 +51,7 @@ public class LoginCheckFilter implements Filter {
 
         // 用户未登录，重定向到登录页面
         log.info("用户未登录，跳转到登录页面");
-        response.sendRedirect(request.getContextPath() + "/front/Page/login.html");
+        response.sendRedirect(request.getContextPath() + "/front/page/login/login.html");
     }
 
     /**

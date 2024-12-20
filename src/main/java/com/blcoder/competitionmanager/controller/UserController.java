@@ -1,20 +1,20 @@
 package com.blcoder.competitionmanager.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.blcoder.competitionmanager.common.R;
 import com.blcoder.competitionmanager.entity.Users;
 import com.blcoder.competitionmanager.service.UsersService;
+import com.blcoder.competitionmanager.utils.VaildateCodeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -70,11 +70,23 @@ public class UserController {
     }
 
     @PostMapping("/check")
-    public R<String> check(@RequestBody Users users){
-        log.info("提交用户信息：" + users);
+    public R<String> check(@RequestBody Map map, HttpSession session){
+        log.info(map.toString());
+        String email = map.get("email").toString();
+        String code = map.get("code").toString();
+        Object codeInSession = session.getAttribute(email);
+        if (codeInSession != null && codeInSession.equals(code)) {
+            return R.success("验证码正确");
+        }
+        return R.error("验证码错误");
+    }
+
+    @PostMapping("/sendMsg")
+    public R<String> sendMsg(@RequestBody Users user, HttpSession session){
+        log.info("用户信息：" + user);
         //检查是否存在该用户
         LambdaQueryWrapper<Users> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Users::getUsername,users.getUsername());
+        queryWrapper.eq(Users::getUsername,user.getUsername());
         Users one = usersService.getOne(queryWrapper);
 
         //不存在返回错误
@@ -83,22 +95,47 @@ public class UserController {
         }
 
         //检查邮箱是否正确，不正确返回错误
-        if (one.getEmail() != users.getEmail()){
+        if (!one.getEmail().equals(user.getEmail())){
             return R.error("邮箱不正确");
         }
 
-        return R.success("填写正确，可以发送验证码");
+        //发送验证码
+        String email = user.getEmail();
+        if (StringUtils.isNotEmpty(email)) {
+            // 生成验证码
+            String code = VaildateCodeUtils.generateVerificationCode();
+
+            // 发送验证码到用户邮箱
+            boolean result = VaildateCodeUtils.sendVerificationCode(email, code);
+
+            if (result) {
+                // 将验证码存储在 session 中，供后续验证使用
+                session.setAttribute(email, code);
+                return R.success("验证码已发送到您的邮箱");
+            } else {
+                return R.error("验证码发送失败");
+            }
+        }
+        return R.error("邮箱不能为空");
     }
 
-    @PostMapping("/sendMsg")
-    public R<String> sendMsg(@RequestBody Users user, HttpSession session){
-        String phone = user.getEmail();
-        if(StringUtils.isNotEmpty(phone)){
-            String code = ValidateCodeUtils.generateValidateCode(4).toString();
-            SMSUtils.sendMessage("饭点","SMS_474935881",phone,code);
-            session.setAttribute(phone,code);
-            return R.success("手机验证码发送成功");
-        }
-        return R.error("短信发送失败");
+    @PutMapping("/reset")
+    public R<Users> reset(HttpServletRequest request, @RequestBody Users users){
+        //1.将页面提交的密码进行md5加密处理
+        String password = users.getPassword();
+        password = DigestUtils.md5DigestAsHex(password.getBytes());
+
+        //2.根据页面提交的用户名username查询数据库
+        LambdaUpdateWrapper<Users> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Users::getUsername,users.getUsername());
+        wrapper.set(Users::getPassword,password);
+        usersService.update(wrapper);
+
+        //3.修改成功，将用户id存入Session并返回登录成功结果
+        LambdaQueryWrapper<Users> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Users::getUsername,users.getUsername());
+        Users one = usersService.getOne(queryWrapper);
+        request.getSession().setAttribute("user",one.getId());
+        return R.success(users);
     }
 }
